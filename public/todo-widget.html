@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MCP Apps Todo</title>
+    <style>
+      body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; padding: 12px; }
+      .row { display: flex; gap: 8px; margin-bottom: 8px; }
+      input { flex: 1; padding: 8px; }
+      button { padding: 8px 12px; }
+      pre { background: #f6f8fa; padding: 8px; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <div class="row">
+      <strong>Status:</strong>
+      <span id="status">Initializing…</span>
+    </div>
+
+    <div class="row">
+      <input id="todoText" type="text" placeholder="Add a todo..." />
+      <button id="addBtn">Add</button>
+      <button id="listBtn">Refresh</button>
+    </div>
+
+    <div id="summary"></div>
+    <pre id="raw"></pre>
+
+    <script type="module">
+      import { App } from "https://unpkg.com/@modelcontextprotocol/ext-apps@latest/app-with-deps";
+
+      const app = new App({ name: "Codex Starter UI", version: "0.0.1" });
+
+      const statusEl = document.getElementById("status");
+      const summaryEl = document.getElementById("summary");
+      const rawEl = document.getElementById("raw");
+
+      app.ontoolresult = (result) => {
+        const text = (result?.content || [])
+          .map((c) => (c?.type === "text" ? c.text : ""))
+          .join("")
+          .trim();
+
+        summaryEl.textContent = text;
+        rawEl.textContent = JSON.stringify(result, null, 2);
+      };
+
+      async function connect() {
+        statusEl.textContent = "Connecting…";
+        await app.connect();
+        statusEl.textContent = "Connected ✅";
+      }
+
+      async function addTodo() {
+        const text = (document.getElementById("todoText").value || "").trim();
+        if (!text) return;
+        statusEl.textContent = "Adding…";
+        await app.callServerTool("todo", { action: "add", text });
+        document.getElementById("todoText").value = "";
+      }
+
+      async function refresh() {
+        statusEl.textContent = "Listing…";
+        await app.callServerTool("todo", { action: "list" });
+        statusEl.textContent = "Connected ✅";
+      }
+
+      document.getElementById("addBtn").addEventListener("click", addTodo);
+      document.getElementById("listBtn").addEventListener("click", refresh);
+      document.getElementById("todoText").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") addTodo();
+      });
+
+      connect();
+    </script>
+  </body>
+</html>

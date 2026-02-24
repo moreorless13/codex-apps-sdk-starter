@@ -35,18 +35,26 @@ export function createServer() {
         properties: {
           action: { type: 'string', enum: ['list', 'add'] },
           title: { type: 'string' },
+          text: { type: 'string' },
         },
         required: ['action'],
         additionalProperties: false,
       },
-      _meta: { ui: { resourceUri } },
+      _meta: {
+        ui: {
+          resourceUri,
+          // Allow loading the ext-apps App SDK from unpkg.
+          csp: "default-src 'self'; script-src 'self' https://unpkg.com; connect-src 'self'; style-src 'self' 'unsafe-inline';",
+        },
+      },
     },
     async ({ arguments: args }) => {
       const action = args.action ?? 'list';
       if (action === 'add') {
+        const title = args.title ?? args.text ?? 'Untitled';
         todos.push({
           id: String(Date.now()),
-          title: args.title || 'Untitled',
+          title,
           createdAt: new Date().toISOString(),
         });
       }
@@ -55,10 +63,13 @@ export function createServer() {
       const agentPrompt = buildTodoPrompt('User asked for todo list updates', summary);
 
       return {
-        content: [{
-          type: 'text',
-          text: `${agentPrompt}\n\nCurrent todos:\n${summary || '(none yet)'}`,
-        }],
+        // Fallback for hosts without MCP Apps support.
+        content: [
+          {
+            type: 'text',
+            text: `${agentPrompt}\n\nCurrent todos:\n${summary || '(none yet)'}`,
+          },
+        ],
       };
     },
   );
@@ -71,9 +82,7 @@ export function createServer() {
     async () => {
       const html = await fs.readFile(path.join(import.meta.dirname, 'public', 'todo-widget.html'), 'utf-8');
       return {
-        contents: [
-          { uri: resourceUri, mimeType: RESOURCE_MIME_TYPE, text: html },
-        ],
+        contents: [{ uri: resourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }],
       };
     },
   );

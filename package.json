@@ -1,0 +1,16 @@
+{
+  "name": "codex-apps-sdk-starter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "NODE_ENV=development node server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/ext-apps": "^0.1.0",
+    "@modelcontextprotocol/sdk": "^0.1.0",
+    "@openai/codex-sdk": "^0.1.0"
+  }
+}

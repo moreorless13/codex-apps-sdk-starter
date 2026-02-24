@@ -1,0 +1,15 @@
+{
+  "name": "Codex Apps SDK Starter",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:0-20",
+  "postCreateCommand": "npm install",
+  "forwardPorts": [8787],
+  "customizations": {
+    "codespaces": {
+      "openFiles": [
+        "README.md",
+        "server.js",
+        "public/todo-widget.html"
+      ]
+    }
+  }
+}
